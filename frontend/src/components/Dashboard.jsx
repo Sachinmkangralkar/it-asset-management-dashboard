@@ -73,7 +73,7 @@ const Dashboard = ({ navigate }) => {
     };
 
     const mainTitleStyle = {
-        color: '#2C4B84',
+        color: '#green',
         fontSize: '32px',
         fontWeight: 'bold',
         marginBottom: '4rem',
