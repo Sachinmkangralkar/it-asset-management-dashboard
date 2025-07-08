@@ -1,10 +1,4 @@
-/*
-================================================================================
-File: frontend/src/components/DamagedPage.jsx
-Instructions: This is the complete code for your "Damaged" page.
-Create this new file in your 'frontend/src/components/' folder.
-================================================================================
-*/
+
 import React, { useState, useEffect, useMemo } from 'react';
 import PageShell from './PageShell';
 import AddAssetModal from './AddAssetModal';

@@ -46,7 +46,7 @@ const AddAssetModal = ({ collectionName, fields, onClose, onAssetAdded }) => {
     };
     const modalContent_Style = {
         backgroundColor: 'white', padding: '2rem', borderRadius: '16px',
-        width: '100%', maxWidth: '600px', // Made modal wider
+        width: '100%', maxWidth: '600px',
     };
     const input_Style = {
         width: '100%', padding: '10px', marginTop: '5px',
@@ -62,8 +62,7 @@ const AddAssetModal = ({ collectionName, fields, onClose, onAssetAdded }) => {
             <div style={modalContent_Style} onClick={e => e.stopPropagation()}>
                 <h2 style={{ color: '#2C4B84', marginBottom: '1.5rem' }}>Add New Asset</h2>
                 <form onSubmit={handleSubmit}>
-                    {/* The form now renders inputs based on the 'fields' prop */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', maxHeight: '60vh', overflowY: 'auto', padding: '0 1rem' }}>
                         {fields.map(field => (
                             <div key={field}>
                                 <label>{field}</label>

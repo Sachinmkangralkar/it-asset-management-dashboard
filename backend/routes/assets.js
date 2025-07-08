@@ -1,4 +1,3 @@
-/* File: backend/routes/assets.js (NEW & CONSOLIDATED) */
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
@@ -48,6 +47,25 @@ router.post('/:collectionName', auth, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
+// --- NEW: Generic PUT route for updating ---
+// PUT /api/assets/:collectionName/:id
+router.put('/:collectionName/:id', auth, async (req, res) => {
+    const Model = getModel(req.params.collectionName);
+    if (!Model) return res.status(404).json({ msg: 'Collection not found' });
+    try {
+        const updatedAsset = await Model.findByIdAndUpdate(
+            req.params.id,
+            { $set: req.body }, // Use $set to update fields
+            { new: true } // Return the updated document
+        );
+        res.json(updatedAsset);
+    } catch (e) {
+        console.error(e.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 
 // Generic DELETE route: /api/assets/:collectionName/:id
 router.delete('/:collectionName/:id', auth, async (req, res) => {

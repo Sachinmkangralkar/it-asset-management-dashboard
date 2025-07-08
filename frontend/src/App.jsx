@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import LoginPage from './components/LoginPage';
+import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import MasterPage from './components/MasterPage';
@@ -44,42 +45,64 @@ export default function App() {
         }
     };
 
-    const appContainerStyle = {
-        backgroundColor: '#F1F1F1',
+    const appStyle = {
         fontFamily: "'Inter', sans-serif",
-        minHeight: '100vh',
-    };
-    
-    const mainAppLayout = {
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
+        backgroundColor: '#F1F1F1',
     };
 
-    // --- UPDATED MAIN CONTENT STYLE ---
-    const mainContentStyle = {
-        flex: 1,
+    const mainAppLayoutStyle = {
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        padding: '2rem 0',
-        paddingTop: '80px', // Add padding to push content below the fixed header
+        height: '100vh', // Full viewport height
+        overflow: 'hidden', // Prevent the main container from scrolling
+    };
+
+    const sidebarContainerStyle = {
+        width: '250px',
+        flexShrink: 0, // Prevent sidebar from shrinking
+    };
+
+    const mainContentContainerStyle = {
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden', // Prevent this container from scrolling
+    };
+    
+    const headerContainerStyle = {
+        height: '73px', // Fixed height for the header
+        flexShrink: 0,
+    };
+
+    const pageContentStyle = {
+        flexGrow: 1,
+        overflowY: 'auto', // Allow ONLY this area to scroll if content is too long
+        padding: '2rem',
     };
 
     if (!token) {
         return (
-            <div style={appContainerStyle}>
+            <div style={appStyle}>
                 <LoginPage onLoginSuccess={handleLoginSuccess} />
             </div>
         );
     }
     
     return (
-        <div style={mainAppLayout}>
-            <Header isLoggedIn={!!token} handleLogout={handleLogout} />
-            <main style={mainContentStyle}>
-                {renderPage()}
-            </main>
+        <div style={appStyle}>
+            <div style={mainAppLayoutStyle}>
+                <div style={sidebarContainerStyle}>
+                    <Sidebar navigate={navigate} activePage={page} />
+                </div>
+                
+                <div style={mainContentContainerStyle}>
+                    <div style={headerContainerStyle}>
+                        <Header isLoggedIn={!!token} handleLogout={handleLogout} />
+                    </div>
+                    <main style={pageContentStyle}>
+                        {renderPage()}
+                    </main>
+                </div>
+            </div>
         </div>
     );
 }

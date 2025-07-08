@@ -1,4 +1,3 @@
-/* File: backend/importData.js (UPDATED) */
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');

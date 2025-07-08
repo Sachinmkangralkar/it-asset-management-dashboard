@@ -1,47 +1,34 @@
 import React from 'react';
 
-const Header = ({ isLoggedIn, handleLogout }) => {
-    // --- UPDATED HEADER STYLE ---
+const Header = ({ handleLogout, isLoggedIn }) => {
     const headerStyle = {
+        width: '100%',
         backgroundColor: '#FFFFFF',
         padding: '1rem 2rem',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+        boxSizing: 'border-box',
+        borderBottom: '1px solid #E0E0E0',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        width: '100%',
-        boxSizing: 'border-box',
-        position: 'fixed', // Fix the header to the viewport
+        position: 'fixed',
         top: 0,
         left: 0,
-        zIndex: 1000, // Ensure it stays on top of other content
+        zIndex: 1001,
     };
 
-    const titleContainerStyle = {
+    const logoContainerStyle = {
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'flex-start',
     };
 
     const companyNameStyle = {
-        fontSize: '22px',
+        fontSize: '24px',
         fontWeight: '700',
     };
     
-    const cirrusStyle = {
-        color: '#2C4B84',
-    };
-
-    const labsStyle = {
-        color: '#D5292B',
-    };
-
-    const subtitleStyle = {
-        color: '#6C727F',
-        fontSize: '12px',
-        fontWeight: '500',
-        marginTop: '-4px',
-    };
+    const cirrusStyle = { color: '#2C4B84' };
+    const labsStyle = { color: '#D5292B' };
+    const subtitleStyle = { color: '#6C727F', fontSize: '11px', marginTop: '-4px' };
 
     const buttonContainerStyle = {
         display: 'flex',
@@ -68,29 +55,16 @@ const Header = ({ isLoggedIn, handleLogout }) => {
 
     return (
         <header style={headerStyle}>
-            <div style={titleContainerStyle}>
+            <div style={logoContainerStyle}>
                 <div style={companyNameStyle}>
-                    <span style={cirrusStyle}>cirrus</span>
-                    <span style={labsStyle}>labs</span>
+                    <span style={cirrusStyle}>cirrus</span><span style={labsStyle}>labs</span>
                 </div>
-                <div style={subtitleStyle}>
-                    IT Asset Management Dashboard
-                </div>
+                <div style={subtitleStyle}>IT Asset Management Dashboard</div>
             </div>
             {isLoggedIn && (
-                <div style={buttonContainerStyle}>
-                    <button
-                        style={helpButtonStyle}
-                        onClick={() => alert('Help button clicked!')}
-                    >
-                        Help
-                    </button>
-                    <button
-                        style={logoutButtonStyle}
-                        onClick={handleLogout}
-                    >
-                        Logout
-                    </button>
+                 <div style={buttonContainerStyle}>
+                    <button style={helpButtonStyle} onClick={() => alert('Help clicked!')}>Help</button>
+                    <button style={logoutButtonStyle} onClick={handleLogout}>Logout</button>
                 </div>
             )}
         </header>

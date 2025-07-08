@@ -1,4 +1,3 @@
-// File: backend/addUser.js
 
 require('dotenv').config();
 const mongoose = require('mongoose');

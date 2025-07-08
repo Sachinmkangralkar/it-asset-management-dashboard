@@ -1,10 +1,4 @@
-/*
-================================================================================
-File: frontend/src/components/EWastePage.jsx
-Instructions: This is the complete code for your "E-Waste" page.
-Create this new file in your 'frontend/src/components/' folder.
-================================================================================
-*/
+
 import React, { useState, useEffect, useMemo } from 'react';
 import PageShell from './PageShell';
 import AddAssetModal from './AddAssetModal';

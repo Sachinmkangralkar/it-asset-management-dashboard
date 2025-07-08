@@ -26,7 +26,7 @@ const FilterPanel = ({ filters, filterOptions, onFilterChange, onClearFilters })
         color: '#2C4B84',
         fontSize: '12px',
     };
-
+    
     const buttonStyle = {
         background: '#E0E0E0',
         color: 'black',
@@ -34,7 +34,7 @@ const FilterPanel = ({ filters, filterOptions, onFilterChange, onClearFilters })
         borderRadius: '6px',
         padding: '8px',
         cursor: 'pointer',
-        height: '36px', // Match select height
+        height: '36px',
         fontFamily: "'Inter', sans-serif",
         fontWeight: 'bold',
     };

@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const User = require('../models/User');
 
-// The '/register' route remains the same. It's used by the new admin page.
 router.post('/register', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -23,7 +22,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Update the '/login' route to send back admin status
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -36,8 +34,7 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
         
-        // --- UPDATED PAYLOAD ---
-        // Include the user's ID and their isAdmin status in the token
+       
         const payload = {
             user: {
                 id: user.id,

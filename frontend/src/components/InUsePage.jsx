@@ -1,39 +1,35 @@
-/*
-================================================================================
-File: frontend/src/components/InUsePage.jsx
-Instructions: This is the complete code for your "In Use" page.
-Create this new file in your 'frontend/src/components/' folder.
-================================================================================
-*/
 import React, { useState, useEffect, useMemo } from 'react';
 import PageShell from './PageShell';
 import AddAssetModal from './AddAssetModal';
-import FilterPanel from './FilterPanel';
+import InfoModal from './InfoModal';
+import EditModal from './EditModal';
+import Pagination from './Pagination';
 
-// Helper icons...
+// Helper icons
 const SearchIcon = () => <svg height="16" width="16" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5A6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>;
-const FilterIcon = () => <svg height="16" width="16" viewBox="0 0 24 24"><path fill="currentColor" d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"></path></svg>;
-const DownloadIcon = () => <svg height="16" width="16" viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg>;
 const AddIcon = () => <svg height="16" width="16" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>;
+const InfoIcon = () => <svg height="16" width="16" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path></svg>;
+const EditIcon = () => <svg height="16" width="16" viewBox="0 0 24 24"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>;
 const DeleteIcon = () => <svg height="16" width="16" viewBox="0 0 24 24"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg>;
 
 const InUsePage = ({ navigate }) => {
     const collectionName = 'inuse';
-    // Define the fields specific to the In Use form
-    const modalFields = ['Assignee Name', 'Postion', 'Employee Email', 'Department', 'Model', 'Serial Number', 'Location', 'Status'];
-    
+    const primaryHeaders = ['Assignee Name', 'Department', 'Model', 'Serial Number', 'Location'];
+    const addModalFields = ['Assignee Name', 'Postion', 'Employee Email', 'Department', 'Model', 'Serial Number', 'Location', 'Status'];
+
     const [assets, setAssets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
-    // Define the filters relevant to this page
-    const [filters, setFilters] = useState({ Model: '', Location: '', Department: '' });
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [viewingAsset, setViewingAsset] = useState(null);
+    const [editingAsset, setEditingAsset] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const fetchData = async () => {
-        setLoading(true);
+        if (!loading) setLoading(true);
         try {
             const token = localStorage.getItem('token');
             const response = await fetch(`http://localhost:4000/api/assets/${collectionName}`, { headers: { 'x-auth-token': token } });
@@ -45,33 +41,13 @@ const InUsePage = ({ navigate }) => {
 
     useEffect(() => { fetchData(); }, []);
 
-    const filterOptions = useMemo(() => {
-        const options = { Model: new Set(), Location: new Set(), Department: new Set() };
-        assets.forEach(asset => {
-            Object.keys(options).forEach(key => {
-                if (asset[key]) options[key].add(asset[key]);
-            });
-        });
-        return { Model: [...options.Model], Location: [...options.Location], Department: [...options.Department] };
-    }, [assets]);
-
-    const displayedHeaders = useMemo(() => {
-        if (assets.length === 0) return [];
-        const allKeys = new Set();
-        assets.forEach(asset => Object.keys(asset).forEach(key => {
-            if (key !== '_id' && key !== '__v' && key !== '') allKeys.add(key);
-        }));
-        return Array.from(allKeys);
-    }, [assets]);
-
     const filteredAndSortedAssets = useMemo(() => {
-        let processedAssets = [...assets];
+        let sortableAssets = [...assets];
         if (searchTerm) {
-            processedAssets = processedAssets.filter(asset => Object.values(asset).some(value => String(value).toLowerCase().includes(searchTerm.toLowerCase())));
+            sortableAssets = sortableAssets.filter(asset => Object.values(asset).some(value => String(value).toLowerCase().includes(searchTerm.toLowerCase())));
         }
-        processedAssets = processedAssets.filter(asset => Object.keys(filters).every(key => filters[key] === '' || asset[key] === filters[key]));
         if (sortConfig.key) {
-            processedAssets.sort((a, b) => {
+            sortableAssets.sort((a, b) => {
                 const valA = String(a[sortConfig.key] || '').toLowerCase();
                 const valB = String(b[sortConfig.key] || '').toLowerCase();
                 if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -79,18 +55,25 @@ const InUsePage = ({ navigate }) => {
                 return 0;
             });
         }
-        return processedAssets;
-    }, [assets, searchTerm, sortConfig, filters]);
+        return sortableAssets;
+    }, [assets, searchTerm, sortConfig]);
+
+    const totalPages = Math.ceil(filteredAndSortedAssets.length / itemsPerPage);
+    const paginatedAssets = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredAndSortedAssets.slice(startIndex, startIndex + itemsPerPage);
+    }, [currentPage, filteredAndSortedAssets]);
+
+    const handlePageChange = (page) => {
+        if (page > 0 && page <= totalPages) setCurrentPage(page);
+    };
+    
+    useEffect(() => { setCurrentPage(1); }, [searchTerm, assets]);
 
     const requestSort = (key) => {
         let direction = 'ascending';
         if (sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
         setSortConfig({ key, direction });
-    };
-    
-    const handleFilterChange = (e) => setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    const clearFilters = () => {
-        setFilters({ Model: '', Location: '', Department: '' });
     };
 
     const handleDelete = async (assetId) => {
@@ -103,60 +86,52 @@ const InUsePage = ({ navigate }) => {
         }
     };
 
-    const handleDownload = () => {
-        const headers = ["S.No.", ...displayedHeaders];
-        const rows = filteredAndSortedAssets.map((asset, index) => {
-            const rowData = displayedHeaders.map(header => `"${String(asset[header] || '').replace(/"/g, '""')}"`);
-            return [index + 1, ...rowData].join(',');
-        });
-        const csvContent = [headers.join(','), ...rows].join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        if (link.href) URL.revokeObjectURL(link.href);
-        const url = URL.createObjectURL(blob);
-        link.href = url;
-        link.setAttribute('download', 'inuse_assets_data.csv');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
     return (
-        <PageShell pageTitle="Assets In Use" navigate={navigate}>
-            {isModalOpen && <AddAssetModal collectionName={collectionName} fields={modalFields} onClose={() => setIsModalOpen(false)} onAssetAdded={fetchData} />}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', backgroundColor: '#FAFAFA', borderRadius: '8px', marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #E0E0E0', borderRadius: '6px', padding: '8px', flexGrow: 1 }}>
-                    <SearchIcon />
-                    <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ border: 'none', outline: 'none', width: '100%', backgroundColor: 'transparent', fontFamily: "'Inter', sans-serif" }} />
-                </div>
-                <button onClick={() => setIsFilterOpen(!isFilterOpen)} style={{ background: 'none', border: '1px solid #E0E0E0', borderRadius: '6px', padding: '8px', cursor: 'pointer', display: 'flex' }}><FilterIcon /></button>
-                <button onClick={handleDownload} style={{ background: 'none', border: '1px solid #E0E0E0', borderRadius: '6px', padding: '8px', cursor: 'pointer', display: 'flex' }}><DownloadIcon /></button>
-                <button onClick={() => setIsModalOpen(true)} style={{ background: '#2C4B84', color: 'white', border: 'none', borderRadius: '6px', padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><AddIcon /> Add New</button>
-            </div>
-
-            {isFilterOpen && <FilterPanel filters={filters} filterOptions={filterOptions} onFilterChange={handleFilterChange} onClearFilters={clearFilters} />}
+        <PageShell pageTitle="Assets In Use">
+            {isAddModalOpen && <AddAssetModal collectionName={collectionName} fields={addModalFields} onClose={() => setIsAddModalOpen(false)} onAssetAdded={fetchData} />}
+            {viewingAsset && <InfoModal asset={viewingAsset} onClose={() => setViewingAsset(null)} />}
+            {editingAsset && <EditModal asset={editingAsset} collectionName={collectionName} onClose={() => setEditingAsset(null)} onAssetUpdated={fetchData} />}
             
-            {loading ? <p>Loading...</p> : error ? <p style={{ color: 'red' }}>{error}</p> :
-            <div style={{ overflowX: 'auto', width: '100%' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Inter', sans-serif" }}>
-                    <thead>
-                        <tr>
-                            <th style={{ padding: '12px', borderBottom: '2px solid #E0E0E0', textAlign: 'left', fontWeight: 'bold', color: '#2C4B84' }}>S.No.</th>
-                            {displayedHeaders.map(key => <th key={key} onClick={() => requestSort(key)} style={{ padding: '12px', borderBottom: '2px solid #E0E0E0', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', color: '#2C4B84' }}>{key} {sortConfig.key === key ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}</th>)}
-                            <th style={{ padding: '12px', borderBottom: '2px solid #E0E0E0', textAlign: 'left', fontWeight: 'bold', color: '#2C4B84' }}>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredAndSortedAssets.map((asset, index) => (
-                            <tr key={asset._id} style={{ borderBottom: '1px solid #F0F0F0' }}>
-                                <td style={{ padding: '12px', whiteSpace: 'nowrap', fontSize: '14px' }}>{index + 1}</td>
-                                {displayedHeaders.map(key => <td key={key} style={{ padding: '12px', whiteSpace: 'nowrap', fontSize: '14px' }}>{asset[key]}</td>)}
-                                <td style={{ padding: '12px' }}><button onClick={() => handleDelete(asset._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#D5292B' }}><DeleteIcon /></button></td>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <div style={{ flexShrink: 0, paddingBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', backgroundColor: '#FAFAFA', borderRadius: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #E0E0E0', borderRadius: '6px', padding: '8px', flexGrow: 1 }}>
+                            <SearchIcon />
+                            <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ border: 'none', outline: 'none', width: '100%', backgroundColor: 'transparent', fontFamily: "'Inter', sans-serif" }} />
+                        </div>
+                        <button onClick={() => setIsAddModalOpen(true)} style={{ background: '#2C4B84', color: 'white', border: 'none', borderRadius: '6px', padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><AddIcon /> Add New</button>
+                    </div>
+                </div>
+                
+                <div style={{ flexGrow: 1, overflow: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Inter', sans-serif" }}>
+                        <thead>
+                            <tr>
+                                <th style={{ padding: '12px', borderBottom: '2px solid #E0E0E0', textAlign: 'left', fontWeight: 'bold', color: '#2C4B84', position: 'sticky', top: 0, backgroundColor: 'white' }}>S.No.</th>
+                                {primaryHeaders.map(key => <th key={key} onClick={() => requestSort(key)} style={{ padding: '12px', borderBottom: '2px solid #E0E0E0', cursor: 'pointer', textAlign: 'left', fontWeight: 'bold', color: '#2C4B84', position: 'sticky', top: 0, backgroundColor: 'white' }}>{key} {sortConfig.key === key ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}</th>)}
+                                <th style={{ padding: '12px', borderBottom: '2px solid #E0E0E0', textAlign: 'left', fontWeight: 'bold', color: '#2C4B84', position: 'sticky', top: 0, backgroundColor: 'white' }}>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>}
+                        </thead>
+                        <tbody>
+                            {loading ? (<tr><td colSpan={primaryHeaders.length + 2}>Loading...</td></tr>) : 
+                             error ? (<tr><td colSpan={primaryHeaders.length + 2} style={{color: 'red'}}>{error}</td></tr>) :
+                             paginatedAssets.map((asset, index) => (
+                                <tr key={asset._id} style={{ borderBottom: '1px solid #F0F0F0' }}>
+                                    <td style={{ padding: '12px', whiteSpace: 'nowrap', fontSize: '14px' }}>{((currentPage - 1) * itemsPerPage) + index + 1}</td>
+                                    {primaryHeaders.map(key => <td key={key} style={{ padding: '12px', whiteSpace: 'nowrap', fontSize: '14px' }}>{asset[key]}</td>)}
+                                    <td style={{ padding: '12px', display: 'flex', gap: '1rem' }}>
+                                        <button onClick={() => setViewingAsset(asset)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2C4B84' }} title="View Details"><InfoIcon /></button>
+                                        <button onClick={() => setEditingAsset(asset)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#00C49F' }} title="Edit Asset"><EditIcon /></button>
+                                        <button onClick={() => handleDelete(asset._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#D5292B' }} title="Delete Asset"><DeleteIcon /></button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+            </div>
         </PageShell>
     );
 };
